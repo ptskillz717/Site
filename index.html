@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <title>Platinum Skillz | Analog Mastering</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" type="image/png" href="favicon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#000000">
+    
+    <style>
+        /* --- PLATINUM THEME --- */
+        :root { 
+            --neon: #00f3ff; 
+            --pink: #d900ff; 
+            --gold: #ffd700; 
+            --dark: #050505; 
+            --glass: rgba(10, 10, 10, 0.85); 
+        }
+        
+        html { scroll-behavior: smooth; }
+        body { 
+            margin: 0; background: var(--dark); color: white; 
+            font-family: 'Rajdhani', sans-serif; overflow-x: hidden; 
+            padding-top: 80px; padding-bottom: 100px; 
+        }
+
+        /* --- BACKGROUND FX --- */
+        #bg-video { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            object-fit: cover; z-index: -20; opacity: 0.4; 
+            filter: contrast(1.2) grayscale(80%); pointer-events: none; 
+        }
+        .overlay-texture {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15), rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+            z-index: -10; pointer-events: none;
+        }
+        .vignette {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 20%, #000 120%);
+            z-index: -10; pointer-events: none;
+        }
+
+        /* --- NAVIGATION --- */
+        #nav-bar { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 70px; 
+            background: rgba(0,0,0,0.95); border-bottom: 1px solid #222; 
+            display: flex; justify-content: center; align-items: center; gap: 20px; 
+            z-index: 10000; backdrop-filter: blur(10px); 
+        }
+        .nav-item { 
+            color: #888; font-family: 'Orbitron'; text-decoration: none; 
+            font-size: 0.8rem; font-weight: bold; letter-spacing: 2px; 
+            transition: 0.3s; text-transform: uppercase; cursor: pointer;
+        }
+        .nav-item:hover, .nav-item.active { color: var(--neon); text-shadow: 0 0 15px var(--neon); }
+
+        /* --- TABS --- */
+        .tab-content { display: none; opacity: 0; transition: opacity 0.5s; }
+        .tab-content.active { display: block; opacity: 1; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 20px; position: relative; z-index: 5; }
+
+        /* --- PANELS --- */
+        .glass-panel { 
+            background: var(--glass); border: 1px solid #333; border-top: 1px solid #555;
+            border-radius: 4px; padding: 50px 30px; margin: 50px 0; 
+            backdrop-filter: blur(20px); box-shadow: 0 20px 50px rgba(0,0,0,0.8); 
+        }
+        h2 { 
+            font-family: 'Orbitron'; font-weight: 900; font-size: 2rem; 
+            letter-spacing: 4px; text-transform: uppercase; margin-bottom: 40px;
+            text-align: center; color: #fff; 
+        }
+
+        /* --- HERO --- */
+        .hero { min-height: 85vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        .logo { width: 500px; max-width: 90%; margin-bottom: 30px; filter: drop-shadow(0 0 30px rgba(255,255,255,0.1)); animation: float 6s ease-in-out infinite; }
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
+        .subtitle { color: var(--neon); letter-spacing: 6px; font-weight: 900; font-family: 'Orbitron'; font-size: 1.1rem; margin-bottom: 40px; }
+        .social-links { display: flex; gap: 25px; justify-content: center; margin-bottom: 30px; }
+        .social-links a { color: #fff; font-size: 2rem; transition: 0.3s; }
+        .social-links a:hover { color: var(--neon); transform: scale(1.2); }
+        .btn { display: inline-block; padding: 15px 35px; background: transparent; border: 2px solid var(--neon); color: var(--neon); font-family: 'Orbitron'; font-weight: 900; text-decoration: none; letter-spacing: 2px; transition: 0.3s; }
+        .btn:hover { background: var(--neon); color: #000; box-shadow: 0 0 30px var(--neon); }
+
+        /* --- AUDIO PLAYER --- */
+        .reactor-box { background: rgba(0,0,0,0.9); border: 2px solid #333; box-shadow: inset 0 0 50px #000; }
+        .reactor-box.mode-master { border-color: var(--gold); }
+        .reactor-box.mode-raw { border-color: var(--neon); }
+        .controls-wrapper { display: flex; justify-content: center; align-items: center; gap: 20px; margin-top: 25px; }
+        .play-btn { width: 80px; height: 80px; border-radius: 50%; background: #111; border: 2px solid #fff; color: white; font-size: 1.8rem; display: flex; justify-content: center; align-items: center; transition: 0.3s; cursor: pointer; }
+        .play-btn.playing { background: var(--pink); border-color: var(--pink); color: black; }
+        .switch-btn { padding: 12px 25px; font-family: 'Orbitron'; font-size: 0.8rem; border-radius: 5px; background: transparent; border: 1px solid #555; color: #888; cursor:pointer; }
+        .switch-btn.active-raw { border-color: var(--neon); color: var(--neon); background: rgba(0,243,255,0.1); }
+        .switch-btn.active-master { border-color: var(--gold); color: var(--gold); background: rgba(255,215,0,0.1); }
+
+        /* --- PRICING --- */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .card { background: linear-gradient(180deg, #151515, #0a0a0a); padding: 40px; border: 1px solid #333; border-radius: 4px; text-align: center; transition: 0.3s; }
+        .card:hover { transform: translateY(-10px); border-color: var(--gold); }
+        .price { font-size: 3rem; font-family: 'Orbitron'; font-weight: 900; color: #fff; margin: 20px 0; display: block; }
+        .details { text-align: left; margin: 20px 0; color: #888; list-style:none; padding:0; line-height: 1.8; }
+
+        /* --- GALLERY --- */
+        .carousel-wrapper { position: relative; max-width: 900px; margin: 0 auto; overflow: hidden; border-radius: 10px; border: 1px solid #333; background: #000; height: 500px; display:flex; align-items:center; }
+        .carousel-track { display: flex; transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1); height: 100%; width:100%; }
+        .carousel-slide { min-width: 100%; box-sizing: border-box; display: flex; justify-content: center; align-items: center; background: #000; height: 100%; font-family: 'Orbitron'; color: #444; }
+        .carousel-media { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .carousel-btn { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.7); color: var(--neon); border: 1px solid var(--neon); border-radius: 50%; width: 50px; height: 50px; font-size: 1.5rem; cursor: pointer; z-index: 10; display:flex; justify-content:center; align-items:center; }
+        .prev-btn { left: 20px; } .next-btn { right: 20px; }
+
+        /* --- CONTACT & LIVE --- */
+        .contact-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; text-align: left; }
+        .contact-info h3 { color: var(--gold); font-family: 'Orbitron'; margin-bottom: 10px; font-size: 1.2rem; }
+        .live-frame { width: 100%; aspect-ratio: 16/9; border: 2px solid red; border-radius: 10px; }
+
+        /* --- MODALS --- */
+        #lead-modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 10000; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        .modal-box { background: #0a0a0a; border: 1px solid var(--neon); padding: 40px; border-radius: 20px; text-align: center; width: 90%; max-width: 400px; animation: popIn 0.5s; }
+        @keyframes popIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-input { background: #151515; border: 1px solid #333; color: var(--neon); font-family: 'Orbitron'; font-size: 1.2rem; padding: 20px; text-align: center; margin: 20px 0; width: 100%; box-sizing: border-box; }
+
+        /* --- CHAT BOT --- */
+        #ai-widget { position: fixed; bottom: 30px; right: 30px; z-index: 999; }
+        #chat-window { display: none; width: 350px; height: 450px; background: #111; border: 2px solid var(--pink); border-radius: 20px; overflow: hidden; flex-direction: column; }
+        .chat-body { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .chat-msg { padding: 10px; border-radius: 10px; font-size: 0.9rem; max-width: 80%; }
+        .bot { background: #222; align-self: flex-start; border-left: 3px solid var(--pink); }
+        .user { background: #00f3ff; color: black; align-self: flex-end; }
+        #chat-btn { width: 60px; height: 60px; background: var(--pink); border-radius: 50%; display: flex; justify-content: center; align-items: center; cursor: pointer; box-shadow: 0 0 20px var(--pink); font-size: 30px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(217, 0, 255, 0.7); } 100% { box-shadow: 0 0 0 0 rgba(217, 0, 255, 0); } }
+        .chat-input-area { padding: 15px; background: #0a0a0a; border-top: 1px solid #333; display: flex; gap: 10px; }
+        .chat-field { width: 100%; padding: 10px; background: #222; border: 1px solid #444; color: white; }
+        #send-btn { width: 100%; padding: 10px; background: var(--pink); border: none; font-weight: bold; cursor: pointer; }
+
+        /* --- LOGIN --- */
+        #portal-section { text-align: center; margin-top: 60px; padding-top: 60px; border-top: 1px solid #222; }
+        #pid { padding: 15px; width: 100%; border-radius: 5px; border: none; text-align: center; background: #222; color: white; margin-bottom: 15px; font-size: 1.2rem; box-sizing: border-box; }
+
+        /* --- STICKY PLAYER --- */
+        #sticky-player { position: fixed; bottom: -120px; left: 0; width: 100%; height: 80px; background: rgba(10,10,10,0.98); border-top: 2px solid var(--gold); display: flex; justify-content: center; align-items: center; gap: 15px; z-index: 9998; transition: bottom 0.4s; }
+        #sticky-player.visible { bottom: 0; }
+        .mini-btn { padding: 8px 15px; font-family:'Orbitron'; font-size:0.7rem; border:1px solid #444; background:transparent; color:#888; border-radius:4px; cursor:pointer; }
+        .mini-btn.active-raw { color:var(--neon); border-color:var(--neon); }
+        .mini-btn.active-master { color:var(--gold); border-color:var(--gold); }
+        .mini-play { width:50px; height:50px; font-size:1.2rem; border:2px solid #fff; border-radius:50%; background:#222; color:white; cursor:pointer; }
+
+        /* MOBILE */
+        @media(max-width: 700px) {
+            .grid { grid-template-columns: 1fr; }
+            .contact-grid { grid-template-columns: 1fr; }
+            #chat-window { width: 90%; right: 5%; bottom: 90px; }
+        }
+    </style>
+</head>
+<body>
+    <video autoplay muted loop playsinline id="bg-video"><source src="bg_video.mp4" type="video/mp4"></video>
+    <div class="overlay-texture"></div>
+    <div class="vignette"></div>
+    
+    <div id="nav-bar">
+        <div class="nav-item active" onclick="switchTab('home')">STUDIO</div>
+        <div class="nav-item" onclick="switchTab('gallery')">GALLERY</div>
+        <div class="nav-item" onclick="switchTab('live')" style="color:red;">LIVE TV</div>
+        <div class="nav-item" onclick="switchTab('login')">CLIENT VAULT</div>
+    </div>
+    
+    <div id="lead-modal">
+        <div class="modal-box">
+            <div style="position:absolute; top:20px; right:20px; cursor:pointer; color:#666;" onclick="closeModal()">✕</div>
+            <h2 style="color:var(--gold);">UNLOCK AI PRODUCER</h2>
+            <p style="color:#ccc; font-size:0.9rem; margin-bottom:20px;">Enter email to activate tools.</p>
+            <input type="email" id="lead-email" class="modal-input" placeholder="Artist Email...">
+            <button class="btn" style="width:100%; background:var(--gold); color:black;" onclick="unlockBot()">INITIALIZE</button>
+        </div>
+    </div>
+
+    <div class="container">
+        
+        <div id="tab-home" class="tab-content active">
+            <div class="hero">
+                <img src="logo.png" class="logo" alt="Platinum Skillz">
+                <div class="subtitle">ANALOG MASTERING // SSL • NEVE • API</div>
+                <div class="social-links">
+                    <a href="https://www.instagram.com/ptskillz/" target="_blank"><i class="fab fa-instagram"></i></a>
+                    <a href="https://www.facebook.com/Ptskillz717/" target="_blank"><i class="fab fa-facebook"></i></a>
+                    <a href="https://www.youtube.com/channel/UCV4MbpdcObp7vNoex4rpmyg" target="_blank"><i class="fab fa-youtube"></i></a>
+                </div>
+                <div style="margin-top: 50px;">
+                    <a href="#pricing" class="btn">VIEW SERVICES</a>
+                    <button onclick="switchTab('login')" class="btn" style="border-color:var(--pink); color:var(--pink); margin-left: 20px;">CLIENT LOGIN</button>
+                </div>
+            </div>
+            
+            <div class="glass-panel reactor-box" id="reactor">
+                <h2 style="color:white;">THE ANALOG DIFFERENCE</h2>
+                <div class="controls-wrapper">
+                    <button class="switch-btn active-raw" id="btnRaw" onclick="listenRaw()">UNMASTERED</button>
+                    <button class="play-btn" onclick="togglePlay()" id="mainPlayBtn">▶</button>
+                    <button class="switch-btn" id="btnMaster" onclick="listenMaster()">ANALOG MASTER</button>
+                </div>
+                <div id="now-playing-text" style="margin-top:20px; color:#666;">SYSTEM STANDBY</div>
+                <audio id="audio-raw" src="before.mp3" preload="auto"></audio>
+                <audio id="audio-master" src="after.mp3" preload="auto"></audio>
+            </div>
+
+            <div id="pricing" class="glass-panel">
+                <h2>SERVICES & RATES</h2>
+                <div class="grid">
+                    <div class="card">
+                        <h3 style="color:var(--neon);">STEREO MASTER</h3>
+                        <span class="price">$90</span>
+                        <ul class="details"><li>• Analog EQ & Compression</li><li>• Stereo Image Widening</li></ul>
+                        <a href="https://buy.stripe.com/eVq7sN4TT9NHcW1aaN0gw05" class="btn" target="_blank">ORDER</a>
+                    </div>
+                    <div class="card" style="border-color:var(--pink);">
+                        <h3 style="color:var(--pink);">STEM SUMMING</h3>
+                        <span class="price">$180</span>
+                        <ul class="details"><li>• 8-Stem Analog Summing</li><li>• Neve/SSL Bus Processing</li></ul>
+                        <a href="https://buy.stripe.com/4gM6oJaed8JD5tzgzb0gw04" class="btn" style="border-color:var(--pink); color:var(--pink)" target="_blank">ORDER</a>
+                    </div>
+                    <div class="card" style="border-color:var(--gold);">
+                        <h3 style="color:white;">RECORDING</h3>
+                        <span class="price">$60/hr</span>
+                        <ul class="details"><li>• Professional Vocal Booth</li><li>• World-Class Mic Locker</li></ul>
+                        <a href="https://buy.stripe.com/fZu3cx5XX4tn4pvciV0gw02" class="btn" style="border-color:white; color:white;" target="_blank">BOOK</a>
+                    </div>
+                </div>
+            </div>
+
+            <div id="contact" class="glass-panel" style="border-color:var(--gold);">
+                <h2 style="color:var(--gold);">LOCATION & CONTACT</h2>
+                <div class="contact-grid">
+                    <div class="contact-info">
+                        <h3>HARRISBURG HQ</h3><p>3807 Derry Street<br>Harrisburg, PA 17111</p><br>
+                        <h3>CONNECT</h3><p><a href="tel:7175470033" style="color:#fff; text-decoration:none;">(717) 547-0033</a></p><p><a href="mailto:ptskillz717@melodysmusic.onmicrosoft.com" style="color:var(--gold);">EMAIL US</a></p>
+                    </div>
+                    <div class="map-container">
+                        <div class="gps-box"><i class="fas fa-map-marker-alt gps-icon" style="font-size:4rem; color:var(--gold); margin-bottom:20px;"></i><a href="https://www.google.com/maps/search/?api=1&query=3807+Derry+Street+Harrisburg+PA+17111" target="_blank" class="gps-btn">OPEN GPS NAVIGATION</a></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-gallery" class="tab-content">
+            <div class="glass-panel">
+                <h2>STUDIO GALLERY</h2>
+                <div class="carousel-wrapper">
+                    <button class="carousel-btn prev-btn" onclick="moveSlide(-1)">❮</button>
+                    <div class="carousel-track" id="gallery-track"></div>
+                    <button class="carousel-btn next-btn" onclick="moveSlide(1)">❯</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-live" class="tab-content">
+            <div class="glass-panel" style="border-color:red;">
+                <h2 style="color:red;">LIVE FEED</h2>
+                <iframe id="live-frame" class="live-frame" src="" allowfullscreen></iframe>
+                <p style="text-align:center; color:#666; margin-top:10px;">Stream Offline</p>
+            </div>
+        </div>
+
+        <div id="tab-login" class="tab-content">
+            <div class="glass-panel" style="text-align:center; border-color:var(--pink); margin-top:100px; max-width:600px; margin-left:auto; margin-right:auto;">
+                <h2 style="color:var(--pink);">SECURE CLIENT VAULT</h2>
+                <input type="text" id="pid" class="modal-input" placeholder="ENTER ACCESS CODE" onkeypress="if(event.key==='Enter') enterVault()">
+                <br>
+                <button id="unlockBtn" class="btn" style="border-color:var(--pink); color:var(--pink); margin-top:20px;" onclick="enterVault()">UNLOCK VAULT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="sticky-player">
+        <div style="color:#fff; font-family:'Orbitron'; margin-right:20px; font-size:0.8rem;">NOW PLAYING</div>
+        <button class="mini-btn active-raw" id="stickyRaw" onclick="listenRaw()">UNMASTERED</button>
+        <button class="mini-play" onclick="togglePlay()" id="stickyPlayBtn">▶</button>
+        <button class="mini-btn" id="stickyMaster" onclick="listenMaster()">MASTER</button>
+    </div>
+
+    <div id="ai-widget">
+        <div id="chat-window">
+            <div class="chat-header" id="chat-header" style="background:var(--pink); padding:15px; font-weight:bold; color:black;">PLATINUM RECEPTION</div>
+            <div class="chat-body" id="chat-body"><div class="chat-msg bot">Welcome to Platinum Skillz. How can I help?</div></div>
+            <div class="chat-input-area">
+                <input type="text" id="ai-input" class="chat-field" placeholder="Ask a question..." onkeypress="if(event.key==='Enter') askAI()">
+                <button id="send-btn" onclick="askAI()">SEND</button>
+            </div>
+        </div>
+        <div id="chat-btn" onclick="toggleChat()">🤖</div>
+    </div>
+
+<script>
+    // --- TAB SYSTEM ---
+    function switchTab(tabId) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.getElementById('tab-'+tabId).classList.add('active');
+        const navs = document.querySelectorAll('.nav-item');
+        if(tabId==='home') navs[0].classList.add('active');
+        if(tabId==='gallery') { navs[1].classList.add('active'); loadGallery(); }
+        if(tabId==='live') { navs[2].classList.add('active'); loadLive(); }
+        if(tabId==='login') navs[3].classList.add('active');
+    }
+
+    // --- STARTUP ---
+    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('/sw.js'); }); }
+    window.onload = function() {
+        loadGallery(); 
+        const vid = document.getElementById('bg-video'); if(vid) vid.play().catch(e => {});
+        setTimeout(() => { document.getElementById('lead-modal').style.display = 'flex'; }, 3000);
+    }
+
+    // --- GALLERY ---
+    const CFG = { acc: "platinumvault11108", gal: "gallery-assets", sas: "?se=2035-11-26T04%3A41Z&sp=rwdlacup&spr=https&sv=2022-11-02&ss=b&srt=co&sig=U5KMAeALiYVZanmWR5X%2BC2JbGEKVuEI9KEF13R%2BRxa8%3D" };
+    const BASE = "https://" + CFG.acc + ".blob.core.windows.net";
+    let currentSlide = 0; let totalSlides = 0;
+
+    async function loadGallery() {
+        const track = document.getElementById('gallery-track');
+        try {
+            let order = [];
+            try { const ro = await fetch(`${BASE}/${CFG.gal}/gallery_order.json${CFG.sas}&t=${Date.now()}`); if(ro.ok) order = await ro.json(); } catch(e){}
+            const r = await fetch(`${BASE}/${CFG.gal}${CFG.sas}&restype=container&comp=list`);
+            if (!r.ok) { if (r.status === 404) { await fetch(`${BASE}/${CFG.gal}${CFG.sas}&restype=container`, { method: 'PUT', headers: { 'x-ms-blob-public-access': 'blob' } }); } return; }
+            const t = await r.text();
+            const blobs = new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob");
+            let list = [], blobNames = Array.from(blobs).map(b => b.getElementsByTagName("Name")[0].textContent);
+            order.forEach(n => { if(blobNames.includes(n)) list.push(n); });
+            blobNames.forEach(n => { if(!list.includes(n) && n !== "gallery_order.json" && n !== "site_config.json") list.push(n); });
+            let h = ""; totalSlides = 0;
+            for(let name of list) {
+                const src = `${BASE}/${CFG.gal}/${encodeURIComponent(name)}${CFG.sas}`;
+                let content = name.toLowerCase().endsWith('mp4') ? `<video src="${src}" class="carousel-media" autoplay muted loop playsinline></video>` : `<img src="${src}" class="carousel-media">`;
+                h += `<div class="carousel-slide">${content}</div>`; totalSlides++;
+            }
+            track.innerHTML = h || `<div class="carousel-slide" style="color:#666;">GALLERY EMPTY</div>`;
+            setInterval(() => moveSlide(1), 5000);
+        } catch(e) { track.innerHTML = `<div class="carousel-slide">Gallery Error.</div>`; }
+    }
+    function moveSlide(dir) { if(totalSlides === 0) return; currentSlide = (currentSlide + dir + totalSlides) % totalSlides; document.getElementById('gallery-track').style.transform = `translateX(-${currentSlide * 100}%)`; }
+
+    // --- LIVE, AUTH, PLAYER, AI ---
+    async function loadLive() { try { const r = await fetch('/api/config'); const data = await r.json(); if(data.liveUrl) document.getElementById('live-frame').src = data.liveUrl; } catch(e){} }
+    function closeModal() { document.getElementById('lead-modal').style.display = 'none'; }
+    function unlockBot() { const email = document.getElementById('lead-email').value; fetch('/api/ai', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ message: "UNLOCK", userEmail: email, mode: 'creative' }) }); closeModal(); }
+    async function enterVault() { const code = document.getElementById('pid').value; const r = await fetch('/api/login', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ code }) }); const d = await r.json(); if(d.valid) window.location.href = 'client.html?p=' + code; else alert("Access Denied"); }
+
+    const raw = document.getElementById('audio-raw'); const master = document.getElementById('audio-master'); const box = document.getElementById('reactor'); const playBtn = document.getElementById('mainPlayBtn'); const btnRaw = document.getElementById('btnRaw'); const btnMaster = document.getElementById('btnMaster'); const txt = document.getElementById('now-playing-text'); const stickyBar = document.getElementById('sticky-player'); const stickPlay = document.getElementById('stickyPlayBtn'); const stickRaw = document.getElementById('stickyRaw'); const stickMaster = document.getElementById('stickyMaster'); let isPlaying = false; let currentMode = 'raw'; 
+    function togglePlay() { if(isPlaying) { raw.pause(); master.pause(); isPlaying = false; updatePlayIcons("▶", "PAUSED", false); } else { if(Math.abs(raw.currentTime - master.currentTime) > 0.2) { master.currentTime = raw.currentTime; } updateVolume(); raw.play(); master.play(); isPlaying = true; updatePlayIcons("⏹", currentMode === 'raw' ? "SYSTEM ACTIVE: UNMASTERED" : "SYSTEM ACTIVE: MASTERED", true); if(currentMode === 'raw') listenRaw(); else listenMaster(); } }
+    function updatePlayIcons(symbol, text, addingClass) { playBtn.innerText = symbol; stickPlay.innerText = symbol; txt.innerText = text; if(addingClass) { playBtn.classList.add('playing'); stickPlay.classList.add('playing'); } else { playBtn.classList.remove('playing'); stickPlay.classList.remove('playing'); } }
+    function listenRaw() { currentMode = 'raw'; updateVolume(); btnRaw.classList.add('active-raw'); btnMaster.classList.remove('active-master'); box.classList.add('mode-raw'); box.classList.remove('mode-master'); stickRaw.classList.add('active-raw'); stickMaster.classList.remove('active-master'); if(isPlaying) txt.innerText = "SYSTEM ACTIVE: UNMASTERED"; }
+    function listenMaster() { currentMode = 'master'; updateVolume(); btnRaw.classList.remove('active-raw'); btnMaster.classList.add('active-master'); box.classList.remove('mode-raw'); box.classList.add('mode-master'); stickRaw.classList.remove('active-raw'); stickMaster.classList.add('active-master'); if(isPlaying) txt.innerText = "SYSTEM ACTIVE: MASTERED"; }
+    function updateVolume() { if(currentMode === 'raw') { raw.volume = 1.0; master.volume = 0.0001; } else { raw.volume = 0.0001; master.volume = 1.0; } }
+    window.onscroll = function() { if (window.scrollY > box.offsetTop + box.offsetHeight) stickyBar.classList.add('visible'); else stickyBar.classList.remove('visible'); };
+    
+    function toggleChat() { const win = document.getElementById('chat-window'); win.style.display = (win.style.display === 'flex') ? 'none' : 'flex'; }
+    async function askAI() { const msgInput = document.getElementById('ai-input'); const text = msgInput.value.trim(); if(!text) return; const b = document.getElementById('chat-body'); b.innerHTML += '<div class="chat-msg user">' + text + '</div>'; b.innerHTML += '<div class="chat-msg bot" id="loading-dots">Thinking...</div>'; msgInput.value = ""; b.scrollTop = b.scrollHeight; try { const response = await fetch('/api/ai', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message: text, mode: 'business' }) }); const data = await response.json(); document.getElementById('loading-dots').remove(); const cleanReply = data.reply ? data.reply.replace(/\n/g, "<br>") : "No response."; b.innerHTML += '<div class="chat-msg bot">' + cleanReply + '</div>'; b.scrollTop = b.scrollHeight; } catch(e) { if(document.getElementById('loading-dots')) document.getElementById('loading-dots').remove(); b.innerHTML += '<div class="chat-msg bot" style="color:red">Error.</div>'; } }
+</script>
+</body>
+</html>

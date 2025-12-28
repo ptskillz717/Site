@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Platinum Skills - Secure Upload</title>
+    <style>
+        body { background-color: #0d0d0d; color: #d4af37; font-family: 'Arial', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .upload-container { border: 2px solid #d4af37; padding: 40px; border-radius: 15px; background: #1a1a1a; text-align: center; box-shadow: 0 0 20px rgba(212, 175, 55, 0.3); max-width: 400px; width: 100%; }
+        h2 { text-transform: uppercase; letter-spacing: 2px; margin-bottom: 20px; }
+        p { color: #888; margin-bottom: 30px; font-size: 0.9rem; }
+        input[type="file"] { margin-bottom: 20px; color: #fff; }
+        button { background: linear-gradient(45deg, #d4af37, #b8860b); border: none; padding: 12px 30px; color: #000; font-weight: bold; cursor: pointer; border-radius: 5px; text-transform: uppercase; transition: transform 0.2s; }
+        button:hover { transform: scale(1.05); }
+        #status { margin-top: 20px; font-weight: bold; min-height: 20px; }
+    </style>
+</head>
+<body>
+    <div class="upload-container">
+        <h2>Upload to Studio</h2>
+        <p>Send your beats/stems directly to our Google Drive.</p>
+        <form id="uploadForm">
+            <input type="file" name="file" id="fileInput" required>
+            <br>
+            <button type="submit">Upload File</button>
+        </form>
+        <p id="status"></p>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const status = document.getElementById('status');
+            const fileInput = document.getElementById('fileInput');
+            const btn = document.querySelector('button');
+            
+            status.innerText = "⏳ Uploading to Google Drive...";
+            status.style.color = "#d4af37";
+            btn.disabled = true;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const response = await fetch('/upload-beat', { method: 'POST', body: formData });
+                const result = await response.json();
+                
+                if (response.ok) {
+                    status.innerText = "✅ Success! File ID: " + result.id;
+                    status.style.color = "#00ff00";
+                    fileInput.value = '';
+                } else {
+                    status.innerText = "❌ Error: " + (result.error || "Upload failed");
+                    status.style.color = "#ff4444";
+                }
+            } catch (err) {
+                console.error(err);
+                status.innerText = "❌ Connection Error";
+                status.style.color = "#ff4444";
+            } finally {
+                btn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>

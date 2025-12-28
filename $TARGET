@@ -1,0 +1,61 @@
+
+// ==========================================
+// PLATINUM SKILLS: GOOGLE DRIVE INTEGRATION
+// ==========================================
+const multer = require('multer');
+const { google } = require('googleapis');
+const stream = require('stream');
+const path = require('path');
+
+// 1. SERVE THE UPLOAD PAGE
+app.get('/upload', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'upload.html'));
+});
+
+// 2. CONFIGURE STORAGE
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 50 * 1024 * 1024 } // 50MB limit
+});
+
+// 3. HANDLE THE UPLOAD
+app.post('/upload-beat', upload.single('file'), async (req, res) => {
+    try {
+        console.log("Starting Google Drive upload...");
+
+        // CHECK CREDENTIALS
+        if (!process.env.GOOGLE_CREDENTIALS) {
+            console.error("ERROR: GOOGLE_CREDENTIALS not found in Azure Settings.");
+            return res.status(500).json({ error: "Server Configuration Error: Missing Credentials" });
+        }
+
+        const auth = new google.auth.GoogleAuth({
+            credentials: JSON.parse(process.env.GOOGLE_CREDENTIALS),
+            scopes: ['https://www.googleapis.com/auth/drive.file']
+        });
+        const drive = google.drive({ version: 'v3', auth });
+
+        const bufferStream = new stream.PassThrough();
+        bufferStream.end(req.file.buffer);
+
+        // UPLOADING TO YOUR SPECIFIC FOLDER
+        const response = await drive.files.create({
+            requestBody: {
+                name: req.file.originalname,
+                parents: ['1tqry559gyxBTu3ZuM2HRT7dYZLtCfGRv'] 
+            },
+            media: {
+                mimeType: req.file.mimetype,
+                body: bufferStream
+            }
+        });
+
+        console.log("Upload success. ID:", response.data.id);
+        res.status(200).json({ message: 'Success', id: response.data.id });
+
+    } catch (error) {
+        console.error("Upload failed:", error);
+        res.status(500).json({ error: error.message });
+    }
+});
+// ==========================================

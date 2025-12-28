@@ -1,0 +1,19 @@
+{
+  "name": "platinum-pro",
+  "version": "2.0.0",
+  "main": "platinum_server.js",
+  "scripts": {
+    "start": "node platinum_server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "googleapis": "^126.0.1",
+    "multer": "^1.4.5-lts.1",
+    "nodemailer": "^6.9.13",
+    "mongoose": "^8.0.3",
+    "stripe": "^14.10.0",
+    "@azure/communication-email": "^1.0.3",
+    "@azure/communication-sms": "^1.0.1",
+    "stream": "^0.0.2"
+  }
+}
