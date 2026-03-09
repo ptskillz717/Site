@@ -1,312 +1,313 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>PLATINUM COMMAND</title>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500&display=swap" rel="stylesheet">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        body { margin:0; background:#000; color:#fff; font-family:'Rajdhani',sans-serif; height:100vh; display:flex; overflow:hidden; }
-        #sidebar { width:260px; background:#111; border-right:1px solid #333; display:flex; flex-direction:column; flex-shrink:0; }
-        .tab-btn { padding:15px; cursor:pointer; border-bottom:1px solid #222; font-family:'Orbitron'; color:#666; transition:0.2s; font-size: 0.8rem; letter-spacing: 1px; }
-        .tab-btn:hover { color:white; background:#222; }
-        .tab-btn.active { color:#00f3ff; border-left:4px solid #00f3ff; background:#1a1a1a; }
-        #main { flex:1; position:relative; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
-        .view-panel { display:none; height:100%; padding:20px; box-sizing:border-box; overflow-y:auto; }
-        .view-panel.active { display:flex; flex-direction:row; gap:20px; }
-        .col-left { width: 320px; display:flex; flex-direction:column; gap:20px; flex-shrink:0; }
-        .col-right { flex:1; display:flex; flex-direction:column; gap:20px; overflow-y:auto; padding-right:5px; }
-        .panel { background:#151515; border:1px solid #333; padding:20px; border-radius:8px; flex-shrink:0; }
-        h3 { margin-top:0; font-family:'Orbitron'; font-size:1rem; color:#888; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; }
-        #clientList { flex:1; overflow-y:auto; min-height:200px; border:1px solid #222; background:#0a0a0a; padding:5px; }
-        .row { padding:15px; border-bottom:1px solid #222; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
-        .row:hover { background:#222; color:#00f3ff; }
-        .row.active { border-left:3px solid #00f3ff; background:#1a1a1a; color:#00f3ff; }
-        .client-meta { display: block; font-size: 0.8rem; color: #666; margin-top: 4px; line-height: 1.4; }
-        .client-meta span { display: block; }
-        .client-meta a { color: #00f3ff; text-decoration: none; }
-        .del-btn { color:red; cursor:pointer; font-weight:bold; padding:0 5px; }
-        #chatFeed { height:250px; overflow-y:auto; background:#000; border:1px solid #333; padding:15px; margin-bottom:10px; border-radius:4px; }
-        .msg { padding:8px 12px; border-radius:8px; margin-bottom:5px; font-size:0.9rem; max-width:80%; }
-        .msg.admin { background:#222; border-left:3px solid #00f3ff; color:#fff; align-self:flex-start; }
-        .msg.client { background:#1a1a1a; border-right:3px solid #d900ff; color:#ccc; align-self:flex-end; text-align:right; margin-left:auto; }
-        #fList { max-height:200px; overflow-y:auto; background:#000; padding:10px; border:1px solid #333; }
-        .file-row { display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #222; font-size:0.9rem; }
-        .d-btn { color:#0f0; text-decoration:none; border:1px solid #0f0; padding:2px 5px; font-size:0.7rem; }
-        input, textarea { background:#000; border:1px solid #444; color:#fff; padding:10px; width:100%; box-sizing:border-box; margin-bottom:5px; }
-        button { background:#00f3ff; border:none; padding:10px; font-weight:bold; cursor:pointer; width:100%; margin-top:5px; color:#000; font-family:'Orbitron'; }
-        .status-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px; }
-        .stat-btn { padding: 10px; border: 1px solid #333; background: #000; color: #666; cursor: pointer; font-family: 'Orbitron'; font-size:0.8rem; }
-        .stat-btn.active { border-color: #00f3ff; background: rgba(0, 243, 255, 0.1); color: #00f3ff; }
-        #lockScreen { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; }
-        .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
-        .draggable { cursor: grab; background: #111; border: 1px solid #333; padding: 5px; }
-        .thumb { width: 100%; height: 80px; object-fit: cover; }
-        .lead-row { padding:15px; border-bottom:1px solid #222; background:#151515; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center; }
-        .lead-info strong { display:block; color:#fff; font-size:1rem; }
-        .lead-info small { display:block; color:#888; font-size:0.8rem; margin-top:2px; }
-        .action-btn { cursor:pointer; padding:4px 8px; border-radius:4px; margin-left:5px; border:1px solid #444; font-size:0.8rem; }
-        .btn-edit { color:#ffd700; border-color:#ffd700; }
-        .btn-email { color:#00f3ff; border-color:#00f3ff; }
-        .btn-make { border-color:#0f0; color:#0f0; }
-        .btn-sms { border-color:#d900ff; color:#d900ff; }
-        iframe { width:100%; height:100%; border:none; background:white; }
-    </style>
-</head>
-<body>
-
-<div id="lockScreen">
-    <h1 style="font-family:'Orbitron'; color:#00f3ff;">PLATINUM ACCESS</h1>
-    <input type="password" id="pinInput" placeholder="PIN" style="width:200px; text-align:center;" onkeypress="if(event.key==='Enter') checkPin()">
-    <button onclick="checkPin()" style="width:200px; margin-top:10px;">UNLOCK</button>
-</div>
-
-<div id="sidebar">
-    <div class="tab-btn active" onclick="showTab('clients')">CLIENTS & CHAT</div>
-    <div class="tab-btn" onclick="showTab('leads')">LEADS & PROMOS</div>
-    <div class="tab-btn" onclick="showTab('database')">DATABASE DATA</div>
-    <div class="tab-btn" onclick="showTab('producer')">PRODUCER HUB</div>
-    <div class="tab-btn" onclick="showTab('gallery')">GALLERY MANAGER</div>
-    <div class="tab-btn" onclick="showTab('audio')">AUDIO CONFIG</div>
-    <div class="tab-btn" onclick="showTab('live')">LIVE CONFIG</div>
-    <div class="tab-btn" onclick="showTab('builder')">WEBSITE EDITOR</div>
-    <div style="flex:1;"></div>
-    <div style="padding:15px; font-size:0.7rem; color:#444; text-align:center;">PLATINUM OS v22.0</div>
-</div>
-
-<div id="main">
-    <div id="view-clients" class="view-panel active">
-        <div class="col-left">
-            <div class="panel" style="height:100%; display:flex; flex-direction:column;">
-                <h3 style="color:#00f3ff">CLIENT LIST</h3>
-                <div id="clientList">Scanning...</div>
-                <div style="margin-top:10px;"><input id="newC" placeholder="New Client Name"><button onclick="mkC()" style="background:#d900ff;">+ CREATE</button></div>
-            </div>
-        </div>
-        <div class="col-right">
-            <div class="panel">
-                <h3 style="color:#fff">ACTIVE: <span id="codeDisp" style="color:#00f3ff">NONE</span></h3>
-                <div class="status-controls">
-                    <button class="stat-btn" onclick="setStatus('WAITING')" id="btn-WAITING">⏳ WAIT</button>
-                    <button class="stat-btn" onclick="setStatus('RECEIVED')" id="btn-RECEIVED">📥 GOT IT</button>
-                    <button class="stat-btn" onclick="setStatus('PROGRESS')" id="btn-PROGRESS">⚡ WORK</button>
-                    <button class="stat-btn" onclick="setStatus('READY')" id="btn-READY">✅ READY</button>
-                </div>
-                <button onclick="emailClient()" style="background:#222; color:#fff; border:1px solid #444; margin-bottom:5px;">📧 EMAIL UPDATE</button>
-                <button onclick="copyLink()" style="background:#222; color:#fff; border:1px solid #444;">🔗 COPY LINK</button>
-            </div>
-            <div class="panel">
-                <h3>FILES</h3>
-                <div id="fList">Select a client.</div>
-                <button onclick="document.getElementById('fUp').click()" style="width:auto; margin-top:10px; background:#333; color:#fff;">+ UPLOAD FILE</button>
-                <input type="file" id="fUp" hidden multiple onchange="up(this.files)">
-            </div>
-            <div class="panel" style="flex:1;">
-                <h3>CHAT</h3>
-                <div id="chatFeed"></div>
-                <div style="display:flex; gap:5px;"><input id="mIn" placeholder="Type message..." onkeypress="if(event.key==='Enter') snd()"><button onclick="snd()" style="width:80px;">SEND</button></div>
-            </div>
-        </div>
-    </div>
-
-    <div id="view-leads" class="view-panel">
-        <div class="col-left">
-            <div class="panel"><h3 style="color:#d900ff">AI MARKETING</h3><input id="dealTopic" placeholder="Topic..."><button onclick="generateDeal()" style="background:#d900ff;">GENERATE</button></div>
-            <div class="panel" style="flex:1;"><h3 style="color:#00f3ff">COMPOSE</h3><input id="promoSubject" placeholder="Subject..."><textarea id="promoBody" placeholder="Body..." style="height:150px;"></textarea><button onclick="sendPromoAll()" style="background:red; color:white;">📢 SEND ALL</button><p id="promoStatus" style="margin-top:5px; color:#0f0; font-size:0.8rem;"></p></div>
-        </div>
-        <div class="col-right">
-            <div class="panel" style="flex:1;">
-                <h3 style="color:#ffd700">DATABASE (<span id="leadCount">0</span>)</h3>
-                <div style="margin-top:10px; padding-top:10px; border-top:1px solid #333;">
-                    <input id="leadSearch" placeholder="🔍 Search Leads..." style="margin-bottom:10px; border-color:#ffd700;" onkeyup="renderLeads()">
-                    <button onclick="document.getElementById('csvUp').click()" style="background:#333; color:#fff; margin-bottom:5px;">📂 IMPORT CSV</button>
-                    <input type="file" id="csvUp" hidden accept=".csv" onchange="uploadCsv(this.files[0])">
-                </div>
-                <div style="display:flex; gap:5px;">
-                    <input id="mName" placeholder="Name" style="width:30%;">
-                    <input id="mEmail" placeholder="Email" style="width:40%;">
-                    <input id="mPhone" placeholder="Phone" style="width:30%;">
-                    <button onclick="addManualLead()" style="width:60px; margin:0; background:#0f0; color:#000;">ADD</button>
-                </div>
-                <button onclick="deleteLead('ALL')" style="background:#444; color:#fff; margin-top:10px;">❌ DELETE ALL</button>
-                <div id="leadList" style="flex:1; overflow-y:auto; margin-top:10px;">Scanning...</div>
-            </div>
-        </div>
-    </div>
-
-    <div id="view-database" class="view-panel"><div class="panel" style="width:100%; height:100%; display:flex; flex-direction:column;"><h3 style="color:#ffd700">RAW DATA</h3><div style="margin-bottom:10px;"><button onclick="refreshDatabase()" style="width:auto; background:#333; color:#fff;">🔄 REFRESH</button></div><textarea id="dbContent" style="flex:1; background:#0a0a0a; color:#0f0; font-family:monospace; border:1px solid #333; padding:15px;" readonly></textarea></div></div>
-
-    <div id="view-producer" class="view-panel"><div class="panel" style="width:100%; max-width:600px; margin:0 auto;"><h3 style="color:#d900ff">🎹 BEAT SEARCH</h3><div style="display:flex; gap:10px;"><input id="loopTopic" placeholder="Vibe..."><button onclick="generateLoop()" style="width:150px; background:#d900ff; color:#000;">SEARCH</button></div><div id="loopResult" style="margin-top:20px; padding-top:10px;"></div></div></div>
-
-    <div id="view-gallery" class="view-panel"><div class="panel" style="width:100%; max-width:600px; margin:0 auto;"><h3 style="color:#d4af37">GALLERY MANAGER</h3><div id="galleryList" class="gallery-grid" style="height:400px; overflow-y:auto; border:1px solid #333; padding:10px;">Loading...</div><button onclick="document.getElementById('gUp').click()" style="background:#d4af37; color:#000; margin-top:10px;">+ UPLOAD MEDIA</button><input type="file" id="gUp" hidden multiple onchange="upGallery(this.files)"></div></div>
-
-    <div id="view-audio" class="view-panel"><div class="panel" style="width:100%; max-width:600px; margin:0 auto;"><h3 style="color:#00f3ff">AUDIO CONFIG</h3><div style="display:flex; gap:10px;"><div style="flex:1;"><button onclick="document.getElementById('upRaw').click()">UPLOAD BEFORE</button><input type="file" id="upRaw" hidden onchange="uploadAudio(this.files[0], 'before.mp3')"></div><div style="flex:1;"><button onclick="document.getElementById('upMaster').click()">UPLOAD AFTER</button><input type="file" id="upMaster" hidden onchange="uploadAudio(this.files[0], 'after.mp3')"></div></div><p id="audioStatus" style="margin-top:20px; color:#0f0; text-align:center;"></p></div></div>
-
-    <div id="view-live" class="view-panel"><div class="panel" style="width:100%; max-width:600px; margin:0 auto;"><h3 style="color:red;">LIVE TV CONFIG</h3><input id="liveUrl" placeholder="YouTube Embed URL..."><button onclick="saveLiveConfig()" style="background:red; color:white;">UPDATE</button></div></div>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>PLATINUM COMMAND</title>
+        <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@500&display=swap" rel="stylesheet">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { margin:0; background:#000; color:#fff; font-family:'Rajdhani',sans-serif; height:100vh; display:flex; overflow:hidden; }
+            #sidebar { width:260px; background:#111; border-right:1px solid #333; display:flex; flex-direction:column; flex-shrink:0; }
+            .tab-btn { padding:15px; cursor:pointer; border-bottom:1px solid #222; font-family:'Orbitron'; color:#666; transition:0.2s; font-size: 0.8rem; letter-spacing: 1px; }
+            .tab-btn:hover { color:white; background:#222; }
+            .tab-btn.active { color:#00f3ff; border-left:4px solid #00f3ff; background:#1a1a1a; }
+            #main { flex:1; position:relative; height:100vh; overflow:hidden; display:flex; flex-direction:column; }
+            .view-panel { display:none; height:100%; padding:20px; box-sizing:border-box; overflow-y:auto; }
+            .view-panel.active { display:flex; flex-direction:row; gap:20px; }
+            .col-left { width: 320px; display:flex; flex-direction:column; gap:20px; flex-shrink:0; }
+            .col-right { flex:1; display:flex; flex-direction:column; gap:20px; overflow-y:auto; padding-right:5px; }
+            .panel { background:#151515; border:1px solid #333; padding:20px; border-radius:8px; flex-shrink:0; }
+            h3 { margin-top:0; font-family:'Orbitron'; font-size:1rem; color:#888; border-bottom:1px solid #333; padding-bottom:10px; margin-bottom:10px; }
+            #clientList { flex:1; overflow-y:auto; min-height:200px; border:1px solid #222; background:#0a0a0a; padding:5px; }
+            .row { padding:15px; border-bottom:1px solid #222; cursor:pointer; display:flex; justify-content:space-between; align-items:center; }
+            .row:hover { background:#222; color:#00f3ff; }
+            .row.active { border-left:3px solid #00f3ff; background:#1a1a1a; color:#00f3ff; }
+            .client-meta { display: block; font-size: 0.8rem; color: #666; margin-top: 4px; line-height: 1.4; }
+            .client-meta span { display: block; }
+            .client-meta a { color: #00f3ff; text-decoration: none; }
+            .del-btn { color:red; cursor:pointer; font-weight:bold; padding:0 5px; }
+            #chatFeed { height:250px; overflow-y:auto; background:#000; border:1px solid #333; padding:15px; margin-bottom:10px; border-radius:4px; }
+            .msg { padding:8px 12px; border-radius:8px; margin-bottom:5px; font-size:0.9rem; max-width:80%; }
+            .msg.admin { background:#222; border-left:3px solid #00f3ff; color:#fff; align-self:flex-start; }
+            .msg.client { background:#1a1a1a; border-right:3px solid #d900ff; color:#ccc; align-self:flex-end; text-align:right; margin-left:auto; }
+            #fList { max-height:200px; overflow-y:auto; background:#000; padding:10px; border:1px solid #333; }
+            .file-row { display:flex; justify-content:space-between; align-items:center; padding:8px; border-bottom:1px solid #222; font-size:0.9rem; }
+            .d-btn { color:#0f0; text-decoration:none; border:1px solid #0f0; padding:2px 5px; font-size:0.7rem; }
+            input, textarea { background:#000; border:1px solid #444; color:#fff; padding:10px; width:100%; box-sizing:border-box; margin-bottom:5px; }
+            button { background:#00f3ff; border:none; padding:10px; font-weight:bold; cursor:pointer; width:100%; margin-top:5px; color:#000; font-family:'Orbitron'; }
+            .status-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 10px; }
+            .stat-btn { padding: 10px; border: 1px solid #333; background: #000; color: #666; cursor: pointer; font-family: 'Orbitron'; font-size:0.8rem; }
+            .stat-btn.active { border-color: #00f3ff; background: rgba(0, 243, 255, 0.1); color: #00f3ff; }
+            #lockScreen { position:fixed; top:0; left:0; width:100%; height:100%; background:#000; z-index:9999; display:flex; flex-direction:column; justify-content:center; align-items:center; }
+            .gallery-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; }
+            .draggable { cursor: grab; background: #111; border: 1px solid #333; padding: 5px; }
+            .thumb { width: 100%; height: 80px; object-fit: cover; }
+            .lead-row { padding:15px; border-bottom:1px solid #222; background:#151515; margin-bottom:5px; display:flex; justify-content:space-between; align-items:center; }
+            .lead-info strong { display:block; color:#fff; font-size:1rem; }
+            .lead-info small { display:block; color:#888; font-size:0.8rem; margin-top:2px; }
+            .action-btn { cursor:pointer; padding:4px 8px; border-radius:4px; margin-left:5px; border:1px solid #444; font-size:0.8rem; }
+            .btn-edit { color:#ffd700; border-color:#ffd700; }
+            .btn-email { color:#00f3ff; border-color:#00f3ff; }
+            .btn-make { border-color:#0f0; color:#0f0; }
+            .btn-sms { border-color:#d900ff; color:#d900ff; }
+            iframe { width:100%; height:100%; border:none; background:white; }
+        </style>
+    </head>
+    <body>
     
-    <div id="view-builder" class="view-panel" style="padding:0; flex-direction:column;"><div style="height:50px; background:#111; display:flex; align-items:center; padding:0 20px; justify-content:flex-end; gap:10px;"><button onclick="enableEdit()" style="width:auto; background:#333; color:#fff;">✎ EDIT TEXT</button><button onclick="saveSite()" style="width:auto; background:#0f0; color:#000;">💾 PUBLISH</button></div><iframe id="builderFrame" src="index.html"></iframe></div>
-</div>
-
-<script>
-    const PIN = "7777";
-    const BASE = "https://platinumvault11108.blob.core.windows.net";
-    const CLIENT_CON = "finished-masters";
-    const GAL_CON = "gallery-assets"; 
-    const WEB_CON = "$web";
-    const ORDER_FILE = "gallery_order.json";
-    const CONFIG_FILE = "site_config.json";
-    const KEY = "?sv=2024-11-04&ss=f&srt=c&sp=rwdlc&se=2026-03-09T22:28:00Z&st=2026-03-09T14:13:00Z&spr=https,http&sig=beboEA9dWu7XWc6nJjOBHNeXqZQAKt9sPnUFirdT%2FvA%3D";
-    let curr = null;
-    let allLeads = [];
-
-    function checkPin() {
-        if(document.getElementById('pinInput').value === PIN) {
-            document.getElementById('lockScreen').style.display = 'none';
-            loadC(); loadLeads(); loadGalleryManager();
-        } else alert("Invalid PIN");
-    }
-
-    function showTab(tab) {
-        document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById('view-'+tab).classList.add('active');
-        event.target.classList.add('active');
-        if(tab === 'builder') document.getElementById('builderFrame').src = "index.html";
-        if(tab === 'database') refreshDatabase();
-    }
-
-    // --- CLIENTS ---
-    async function loadC() {
-        try {
-            const r = await fetch(`${BASE}/${CLIENT_CON}${KEY}&restype=container&comp=list`);
-            const t = await r.text();
-            const blobs = Array.from(new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob"));
-            const folders = new Set();
-            blobs.forEach(b => { const n = b.getElementsByTagName("Name")[0].textContent; if(n.includes('/')) folders.add(n.split('/')[0].toUpperCase()); });
-            const leadsRes = await fetch('/api/leads');
-            const leads = await leadsRes.json();
-            let h = "";
-            folders.forEach(folder => {
-                const info = leads.find(l => l.clientCode === folder || (l.name && l.name.toUpperCase() === folder));
-                const meta = info ? `<span class="client-meta" style="color:#00f3ff;">${info.name} | ${info.phone||''}</span>` : `<span class="client-meta" style="color:#444;">No Info</span>`;
-                h += `<div class="row" onclick="sel('${folder}',this)"><div><span style="font-size:1.1rem; font-weight:bold;">${folder}</span>${meta}</div><span class="del-btn" onclick="delC('${folder}',event)">X</span></div>`;
-            });
-            document.getElementById('clientList').innerHTML = h || "<div style='padding:10px;color:#666'>No Clients</div>";
-        } catch(e) { document.getElementById('clientList').innerHTML = "Error."; }
-    }
-
-    // --- LEADS ---
-    async function loadLeads() {
-        const r = await fetch('/api/leads');
-        allLeads = await r.json();
-        renderLeads();
-    }
-    function renderLeads() {
-        const term = document.getElementById('leadSearch') ? document.getElementById('leadSearch').value.toLowerCase() : "";
-        const filtered = allLeads.filter(l => (l.name && l.name.toLowerCase().includes(term)) || (l.email && l.email.toLowerCase().includes(term)));
-        let h = "";
-        filtered.forEach(x => {
-            const meta = x.name ? ` | 👤 ${x.name} 📞 ${x.phone||''}` : "";
-            h += `<div class="lead-row">
-                    <div class="lead-info"><strong>${x.name || "Unknown"} ${x.clientCode?'[CLIENT]':''}</strong><small>${x.email} ${x.phone?'• '+x.phone:''}</small></div>
-                    <div class="lead-actions">
-                        <span class="action-btn btn-make" onclick="promoteLead('${x.email}', '${x.name}', '${x.phone}')">➕ CLIENT</span>
-                        ${x.phone ? `<span class="action-btn btn-sms" onclick="sendSms('${x.phone}')">💬 SMS</span>` : ""}
-                        <span class="action-btn btn-edit" onclick="editLead('${x.email}', '${x.name||''}', '${x.phone||''}')">✎</span>
-                        <span class="action-btn btn-email" onclick="sendOnePromo('${x.email}')">✉️</span>
-                        <span class="action-btn del-btn" onclick="deleteLead('${x.email}')">X</span>
+    <div id="lockScreen">
+        <h1 style="font-family:'Orbitron'; color:#00f3ff;">PLATINUM ACCESS</h1>
+        <input type="password" id="pinInput" placeholder="PIN" style="width:200px; text-align:center;" onkeypress="if(event.key==='Enter') checkPin()">
+        <button onclick="checkPin()" style="width:200px; margin-top:10px;">UNLOCK</button>
+    </div>
+    
+    <div id="sidebar">
+        <div class="tab-btn active" onclick="showTab('clients')">CLIENTS & CHAT</div>
+        <div class="tab-btn" onclick="showTab('leads')">LEADS & PROMOS</div>
+        <div class="tab-btn" onclick="showTab('database')">DATABASE DATA</div>
+        <div class="tab-btn" onclick="showTab('producer')">PRODUCER HUB</div>
+        <div class="tab-btn" onclick="showTab('gallery')">GALLERY MANAGER</div>
+        <div class="tab-btn" onclick="showTab('audio')">AUDIO CONFIG</div>
+        <div class="tab-btn" onclick="showTab('live')">LIVE CONFIG</div>
+        <div class="tab-btn" onclick="showTab('builder')">WEBSITE EDITOR</div>
+        <div style="flex:1;"></div>
+        <div style="padding:15px; font-size:0.7rem; color:#444; text-align:center;">PLATINUM OS v22.0</div>
+    </div>
+    
+    <div id="main">
+        <div id="view-clients" class="view-panel active">
+            <div class="col-left">
+                <div class="panel" style="height:100%; display:flex; flex-direction:column;">
+                    <h3 style="color:#00f3ff">CLIENT LIST</h3>
+                    <div id="clientList">Scanning...</div>
+                    <div style="margin-top:10px;"><input id="newC" placeholder="New Client Name"><button onclick="mkC()" style="background:#d900ff;">+ CREATE</button></div>
+                </div>
+            </div>
+            <div class="col-right">
+                <div class="panel">
+                    <h3 style="color:#fff">ACTIVE: <span id="codeDisp" style="color:#00f3ff">NONE</span></h3>
+                    <div class="status-controls">
+                        <button class="stat-btn" onclick="setStatus('WAITING')" id="btn-WAITING">⏳ WAIT</button>
+                        <button class="stat-btn" onclick="setStatus('RECEIVED')" id="btn-RECEIVED">📥 GOT IT</button>
+                        <button class="stat-btn" onclick="setStatus('PROGRESS')" id="btn-PROGRESS">⚡ WORK</button>
+                        <button class="stat-btn" onclick="setStatus('READY')" id="btn-READY">✅ READY</button>
                     </div>
-                  </div>`;
-        });
-        document.getElementById('leadCount').innerText = filtered.length;
-        document.getElementById('leadList').innerHTML = h || "No matches.";
-    }
-
-    async function promoteLead(email, name, phone) {
-        if(!name || name==='undefined') name = prompt("Confirm Client Name:");
-        if(!name) return;
-        const btn = event.target; btn.innerText = "...";
-        const r = await fetch('/api/promote-lead', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email, name, phone }) });
-        const d = await r.json();
-        if(d.success) { alert("✅ Client Created: " + d.code); loadLeads(); loadC(); } else alert("Error: " + d.error);
-    }
-
-    async function generateDeal() {
-        const t = document.getElementById('dealTopic').value;
-        if(!t) return alert("Please enter a topic first.");
-
-        const btn = event.target;
-        btn.innerText = "Thinking...";
-
-        try {
-            const r = await fetch('/api/ai', { 
-                method: 'POST', 
-                headers: {'Content-Type': 'application/json'}, 
-                body: JSON.stringify({ message: t, mode: 'marketing' }) 
-            });
-            
-            const d = await r.json();
-            
-            // DEBUG ALERT: Tell me what the AI said
-            if (d.reply === "AI Offline.") {
-                alert("❌ Error: API Key is missing in Azure Settings.");
-            } else if (d.reply === "Error" || d.reply === "System Error") {
-                alert("❌ Error: Azure OpenAI Connection Failed. Check Deployment Name.");
-            } else {
-                // Try to parse
-                try {
-                    let clean = d.reply.replace(/```json/g,'').replace(/```/g,'').trim();
-                    const p = JSON.parse(clean);
-                    document.getElementById('promoSubject').value = p.subject;
-                    document.getElementById('promoBody').value = p.body;
-                } catch(parseError) {
-                    // Fallback: It wasn't JSON, just show the text
-                    document.getElementById('promoBody').value = d.reply;
-                    alert("⚠️ AI returned text, not a format I understood. See Body box.");
-                }
-            }
-        } catch(e) {
-            alert("❌ Network Error: Server might be down.");
-        }
-        btn.innerText = "GENERATE";
-    }
-
-    // --- UTILS ---
-    async function editLead(oldEmail, oldName, oldPhone) { const newName=prompt("Name:",oldName); const newEmail=prompt("Email:",oldEmail); const newPhone=prompt("Phone:",oldPhone); if(newEmail) { await fetch('/api/delete-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:oldEmail})}); await fetch('/api/add-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:newName,email:newEmail,phone:newPhone})}); loadLeads(); } }
-    async function sendSms(phone) { const msg=prompt("SMS:"); if(!msg)return; const r=await fetch('/api/send-sms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,message:msg})}); if((await r.json()).success) alert("Sent!"); else alert("Failed"); }
-    async function addManualLead() { const n=document.getElementById('mName').value; const e=document.getElementById('mEmail').value; const p=document.getElementById('mPhone').value; if(!e)return; await fetch('/api/add-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e,phone:p})}); document.getElementById('mName').value=""; document.getElementById('mEmail').value=""; document.getElementById('mPhone').value=""; loadLeads(); }
-    async function deleteLead(e) { if(confirm("Delete?")) await fetch('/api/delete-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})}); loadLeads(); }
-    async function sendPromoAll() { if(confirm("Send ALL?")) await fetch('/api/send-promo-all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:document.getElementById('promoSubject').value,body:document.getElementById('promoBody').value})}); alert("Sent!"); }
-    async function sendOnePromo(e) { if(confirm("Send?")) await fetch('/api/send-promo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,subject:document.getElementById('promoSubject').value,body:document.getElementById('promoBody').value})}); alert("Sent!"); }
-    async function uploadCsv(f) { const d=new FormData(); d.append('file',f); await fetch('/api/upload-leads-csv',{method:'POST',body:d}); loadLeads(); }
-    async function refreshDatabase() { try { const r=await fetch('/api/leads'); const d=await r.json(); document.getElementById('dbContent').value=JSON.stringify(d,null,4); } catch(e){} }
+                    <button onclick="emailClient()" style="background:#222; color:#fff; border:1px solid #444; margin-bottom:5px;">📧 EMAIL UPDATE</button>
+                    <button onclick="copyLink()" style="background:#222; color:#fff; border:1px solid #444;">🔗 COPY LINK</button>
+                </div>
+                <div class="panel">
+                    <h3>FILES</h3>
+                    <div id="fList">Select a client.</div>
+                    <button onclick="document.getElementById('fUp').click()" style="width:auto; margin-top:10px; background:#333; color:#fff;">+ UPLOAD FILE</button>
+                    <input type="file" id="fUp" hidden multiple onchange="up(this.files)">
+                </div>
+                <div class="panel" style="flex:1;">
+                    <h3>CHAT</h3>
+                    <div id="chatFeed"></div>
+                    <div style="display:flex; gap:5px;"><input id="mIn" placeholder="Type message..." onkeypress="if(event.key==='Enter') snd()"><button onclick="snd()" style="width:80px;">SEND</button></div>
+                </div>
+            </div>
+        </div>
     
-    // (Other standard utils: mkC, delC, sel, lF, up, delF, lCh, snd, copyLink, emailClient, setStatus, getStatus, loadGalleryManager, initDrag, saveOrder, upGallery, delGallery, uploadAudio, saveLiveConfig, generateLoop, enableEdit, saveSite)
-    async function mkC() { const n=document.getElementById('newC').value.toUpperCase().replace(/ /g,"_"); if(!n)return; await fetch(`${BASE}/${CLIENT_CON}/${n}/init.txt${KEY}`,{method:'PUT',headers:{'x-ms-blob-type':'BlockBlob'},body:"Init"}); loadC(); }
-    async function delC(n,e) { e.stopPropagation(); if(confirm("Delete "+n+"?")) { const r=await fetch(`${BASE}/${CLIENT_CON}${KEY}&restype=container&comp=list&prefix=${n}/`); const t=await r.text(); const b=new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob"); for(let i of b) await fetch(`${BASE}/${CLIENT_CON}/${i.getElementsByTagName("Name")[0].textContent}${KEY}`,{method:'DELETE'}); setTimeout(loadC,1000); } }
-    function sel(n,el) { curr=n; document.querySelectorAll('.row').forEach(x=>x.classList.remove('active')); el.classList.add('active'); document.getElementById('codeDisp').innerText=n; lCh(); lF(); getStatus(); }
-    async function lF() { if(!curr)return; const r=await fetch(`${BASE}/${CLIENT_CON}${KEY}&restype=container&comp=list&prefix=${curr}/`); const t=await r.text(); const b=new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob"); let h=""; for(let i of b){ const n=i.getElementsByTagName("Name")[0].textContent.replace(curr+'/',''); if(!n.startsWith('msg_')&&!n.startsWith('init')&&!n.startsWith('status')) { const link=`${BASE}/${CLIENT_CON}/${curr}/${encodeURIComponent(n)}${KEY}`; h+=`<div class="file-row"><span>${n}</span><div style="display:flex;align-items:center;"><a href="${link}" target="_blank" class="d-btn">DL</a><span class="del-btn" onclick="delF('${curr}/${n}')">X</span></div></div>`; } } document.getElementById('fList').innerHTML=h; }
-    async function delF(path) { if(confirm("Delete?")) { await fetch(`${BASE}/${CLIENT_CON}/${path}${KEY}`, { method: 'DELETE' }); setTimeout(lF, 500); } }
-    async function up(fs) { for(let f of fs) await fetch(`${BASE}/${CLIENT_CON}/${curr}/${f.name}${KEY}`,{method:'PUT',headers:{'x-ms-blob-type':'BlockBlob'},body:f}); lF(); }
-    async function lCh() { if(!curr)return; const r=await fetch(`${BASE}/${CLIENT_CON}${KEY}&restype=container&comp=list&prefix=${curr}/msg_`); const t=await r.text(); const b=new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob"); let h=""; for(let i of b){ const n=i.getElementsByTagName("Name")[0].textContent; const tx=await(await fetch(`${BASE}/${CLIENT_CON}/${n}${KEY}`)).text(); const cls=n.includes('ADMIN')?'admin':'client'; h+=`<div class="msg ${cls}">${tx}</div>`; } document.getElementById('chatFeed').innerHTML=h; }
-    async function snd() { const i=document.getElementById('mIn'); if(!i.value||!curr)return; await fetch(`${BASE}/${CLIENT_CON}/${curr}/msg_${Date.now()}_ADMIN.txt${KEY}`,{method:'PUT',headers:{'x-ms-blob-type':'BlockBlob'},body:i.value}); await fetch('/api/admin-reply', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({client:curr, msg:i.value})}); i.value=""; setTimeout(lCh,500); }
-    function copyLink() { navigator.clipboard.writeText(`https://platinumpro-13791.azurewebsites.net/client.html?p=${curr}`); alert("Copied!"); }
-    function emailClient() { const e=prompt("Email:"); const m=prompt("Msg:"); if(e&&m) fetch('/api/email-client',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,client:curr,message:m})}); }
-    async function setStatus(v) { if(curr) await fetch('/api/status', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ client: curr, status: v }) }); getStatus(); }
-    async function getStatus() { if(!curr) return; document.querySelectorAll('.stat-btn').forEach(b => b.classList.remove('active')); try{ const r=await fetch(`${BASE}/${CLIENT_CON}/${curr}/status.txt${KEY}&t=${Date.now()}`); if(r.ok) document.getElementById('btn-'+(await r.text())).classList.add('active'); }catch(e){} }
-    async function loadGalleryManager() { try { let order = []; try { const ro = await fetch(`${BASE}/${GAL_CON}/${ORDER_FILE}${KEY}&t=${Date.now()}`); if(ro.ok) order = await ro.json(); } catch(e){} const r = await fetch(`${BASE}/${GAL_CON}${KEY}&restype=container&comp=list`); const t = await r.text(); const blobs = new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob"); let list = [], blobNames = Array.from(blobs).map(b => b.getElementsByTagName("Name")[0].textContent); order.forEach(n => { if(blobNames.includes(n)) list.push(n); }); blobNames.forEach(n => { if(!list.includes(n) && n !== ORDER_FILE) list.push(n); }); let h=""; list.forEach(n => { const link = `${BASE}/${GAL_CON}/${encodeURIComponent(n)}${KEY}`; let thumb = n.toLowerCase().endsWith('mp4') ? "🎥" : `<img src="${link}" class="thumb">`; h += `<div class="draggable" draggable="true" data-name="${n}"><div>${thumb}</div><span class="del-btn" onclick="delGallery('${n}')">X</span></div>`; }); document.getElementById('galleryList').innerHTML = h; initDrag(); } catch(e) { document.getElementById('galleryList').innerHTML = "Gallery Error."; } }
-    function initDrag() { const list = document.getElementById('galleryList'); list.querySelectorAll('.draggable').forEach(i => { i.addEventListener('dragstart', () => i.classList.add('dragging')); i.addEventListener('dragend', () => { i.classList.remove('dragging'); saveOrder(); }); }); list.addEventListener('dragover', e => { e.preventDefault(); const after = [...list.querySelectorAll('.draggable:not(.dragging)')].reduce((c, r) => { const box = r.getBoundingClientRect(); const off = e.clientX - box.left - box.width / 2; return off < 0 && off > c.off ? { off: off, el: r } : c; }, { off: Number.NEGATIVE_INFINITY }).el; const d = document.querySelector('.dragging'); if (after == null) list.appendChild(d); else list.insertBefore(d, after); }); }
-    async function saveOrder() { const items = [...document.querySelectorAll('.draggable')].map(x => x.getAttribute('data-name')); await fetch(`${BASE}/${GAL_CON}/${ORDER_FILE}${KEY}`, { method: 'PUT', headers: {'x-ms-blob-type':'BlockBlob', 'Content-Type':'application/json'}, body: JSON.stringify(items) }); }
-    async function upGallery(fs) { for(let f of fs) await fetch(`${BASE}/${GAL_CON}/${encodeURIComponent(f.name)}${KEY}`, {method:'PUT', headers:{'x-ms-blob-type':'BlockBlob'}, body:f}); loadGalleryManager(); }
-    async function delGallery(n) { if(confirm("Delete?")) { await fetch(`${BASE}/${GAL_CON}/${n}${KEY}`, {method:'DELETE'}); loadGalleryManager(); } }
-    async function uploadAudio(f,n){ await fetch(`${BASE}/${WEB_CON}/${n}${KEY}`,{method:'PUT',headers:{'x-ms-blob-type':'BlockBlob','Content-Type':f.type},body:f}); document.getElementById('audioStatus').innerText="Done!"; }
-    async function saveLiveConfig(){ await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({liveUrl:document.getElementById('liveUrl').value})}); alert("Updated!"); }
-    async function generateLoop() { const t = document.getElementById('loopTopic').value; const r = await fetch('/api/ai', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ message: t, mode: 'producer' }) }); const d = await r.json(); try { const f = JSON.parse(d.reply); let h=""; f.forEach(file => { h+=`<div style="padding:10px; background:#222; margin-bottom:5px;">${file} <a href="/api/stream?file=${encodeURIComponent(file)}" target="_blank" style="color:#0f0">PLAY</a></div>`; }); document.getElementById('loopResult').innerHTML=h; } catch(e){ document.getElementById('loopResult').innerHTML="No matches."; } }
-    function enableEdit() { document.getElementById('builderFrame').contentDocument.body.contentEditable = true; alert("Edit Mode ON"); }
-    async function saveSite() { if(confirm("Publish?")) { const h = "<!DOCTYPE html>\n" + document.getElementById('builderFrame').contentDocument.documentElement.outerHTML; await fetch('/admin/save', { method: 'POST', headers: { 'x-pin': PIN, 'Content-Type': 'text/html' }, body: h }); alert("Published!"); } }
-
-    setInterval(() => { if(curr) { lCh(); getStatus(); } }, 5000);
-</script>
-</body>
-
-</html>
+        <div id="view-leads" class="view-panel">
+            <div class="col-left">
+                <div class="panel"><h3 style="color:#d900ff">AI MARKETING</h3><input id="dealTopic" placeholder="Topic..."><button onclick="generateDeal()" style="background:#d900ff;">GENERATE</button></div>
+    const KEY = "?sv=2024-11-04&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2026-03-09T23:07:42Z&st=2026-03-09T14:52:42Z&spr=https&sig=Kj2MQkZ%2BYMisgM6qLfMidHXIIlLG%2Fz%2FCJoJEoUIwpNU%3D";
+            </div>
+            <div class="col-right">
+                <div class="panel" style="flex:1;">
+                    <h3 style="color:#ffd700">DATABASE (<span id="leadCount">0</span>)</h3>
+                    <div style="margin-top:10px; padding-top:10px; border-top:1px solid #333;">
+                        <input id="leadSearch" placeholder="🔍 Search Leads..." style="margin-bottom:10px; border-color:#ffd700;" onkeyup="renderLeads()">
+                        <button onclick="document.getElementById('csvUp').click()" style="background:#333; color:#fff; margin-bottom:5px;">📂 IMPORT CSV</button>
+                        <input type="file" id="csvUp" hidden accept=".csv" onchange="uploadCsv(this.files[0])">
+                    </div>
+                    <div style="display:flex; gap:5px;">
+                        <input id="mName" placeholder="Name" style="width:30%;">
+                        <input id="mEmail" placeholder="Email" style="width:40%;">
+                        <input id="mPhone" placeholder="Phone" style="width:30%;">
+                        <button onclick="addManualLead()" style="width:60px; margin:0; background:#0f0; color:#000;">ADD</button>
+                    </div>
+                    <button onclick="deleteLead('ALL')" style="background:#444; color:#fff; margin-top:10px;">❌ DELETE ALL</button>
+                    <div id="leadList" style="flex:1; overflow-y:auto; margin-top:10px;">Scanning...</div>
+                </div>
+            </div>
+        </div>
+    
+        <div id="view-database" class="view-panel"><div class="panel" style="width:100%; height:100%; display:flex; flex-direction:column;"><h3 style="color:#ffd700">RAW DATA</h3><div style="margin-bottom:10px;"><button onclick="refreshDatabase()" style="width:auto; background:#333; color:#fff;">🔄 REFRESH</button></div><textarea id="dbContent" style="flex:1; background:#0a0a0a; color:#0f0; font-family:monospace; border:1px solid #333; padding:15px;" readonly></textarea></div></div>
+    
+        <div id="view-producer" class="view-panel"><div class="panel" style="width:100%; max-width:600px; margin:0 auto;"><h3 style="color:#d900ff">🎹 BEAT SEARCH</h3><div style="display:flex; gap:10px;"><input id="loopTopic" placeholder="Vibe..."><button onclick="generateLoop()" style="width:150px; background:#d900ff; color:#000;">SEARCH</button></div><div id="loopResult" style="margin-top:20px; padding-top:10px;"></div></div></div>
+    
+        <div id="view-gallery" class="view-panel"><div class="panel" style="width:100%; max-width:600px; margin:0 auto;"><h3 style="color:#d4af37">GALLERY MANAGER</h3><div id="galleryList" class="gallery-grid" style="height:400px; overflow-y:auto; border:1px solid #333; padding:10px;">Loading...</div><button onclick="document.getElementById('gUp').click()" style="background:#d4af37; color:#000; margin-top:10px;">+ UPLOAD MEDIA</button><input type="file" id="gUp" hidden multiple onchange="upGallery(this.files)"></div></div>
+    
+        <div id="view-audio" class="view-panel"><div class="panel" style="width:100%; max-width:600px; margin:0 auto;"><h3 style="color:#00f3ff">AUDIO CONFIG</h3><div style="display:flex; gap:10px;"><div style="flex:1;"><button onclick="document.getElementById('upRaw').click()">UPLOAD BEFORE</button><input type="file" id="upRaw" hidden onchange="uploadAudio(this.files[0], 'before.mp3')"></div><div style="flex:1;"><button onclick="document.getElementById('upMaster').click()">UPLOAD AFTER</button><input type="file" id="upMaster" hidden onchange="uploadAudio(this.files[0], 'after.mp3')"></div></div><p id="audioStatus" style="margin-top:20px; color:#0f0; text-align:center;"></p></div></div>
+    
+        <div id="view-live" class="view-panel"><div class="panel" style="width:100%; max-width:600px; margin:0 auto;"><h3 style="color:red;">LIVE TV CONFIG</h3><input id="liveUrl" placeholder="YouTube Embed URL..."><button onclick="saveLiveConfig()" style="background:red; color:white;">UPDATE</button></div></div>
+        
+        <div id="view-builder" class="view-panel" style="padding:0; flex-direction:column;"><div style="height:50px; background:#111; display:flex; align-items:center; padding:0 20px; justify-content:flex-end; gap:10px;"><button onclick="enableEdit()" style="width:auto; background:#333; color:#fff;">✎ EDIT TEXT</button><button onclick="saveSite()" style="width:auto; background:#0f0; color:#000;">💾 PUBLISH</button></div><iframe id="builderFrame" src="index.html"></iframe></div>
+    </div>
+    
+    <script>
+        const PIN = "7777";
+        const BASE = "https://platinumvault11108.blob.core.windows.net";
+        const CLIENT_CON = "finished-masters";
+        const GAL_CON = "gallery-assets"; 
+        const WEB_CON = "$web";
+        const ORDER_FILE = "gallery_order.json";
+        const CONFIG_FILE = "site_config.json";
+        const KEY = "?sv=2024-11-04&ss=f&srt=c&sp=rwdlc&se=2026-03-09T22:28:00Z&st=2026-03-09T14:13:00Z&spr=https,http&sig=beboEA9dWu7XWc6nJjOBHNeXqZQAKt9sPnUFirdT%2FvA%3D";
+        let curr = null;
+        let allLeads = [];
+    
+        function checkPin() {
+            if(document.getElementById('pinInput').value === PIN) {
+                document.getElementById('lockScreen').style.display = 'none';
+                loadC(); loadLeads(); loadGalleryManager();
+            } else alert("Invalid PIN");
+        }
+    
+        function showTab(tab) {
+            document.querySelectorAll('.view-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('view-'+tab).classList.add('active');
+            event.target.classList.add('active');
+            if(tab === 'builder') document.getElementById('builderFrame').src = "index.html";
+            if(tab === 'database') refreshDatabase();
+        }
+    
+        // --- CLIENTS ---
+        async function loadC() {
+            try {
+                const r = await fetch(`${BASE}/${CLIENT_CON}${KEY}&restype=container&comp=list`);
+                const t = await r.text();
+                const blobs = Array.from(new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob"));
+                const folders = new Set();
+                blobs.forEach(b => { const n = b.getElementsByTagName("Name")[0].textContent; if(n.includes('/')) folders.add(n.split('/')[0].toUpperCase()); });
+                const leadsRes = await fetch('/api/leads');
+                const leads = await leadsRes.json();
+                let h = "";
+                folders.forEach(folder => {
+                    const info = leads.find(l => l.clientCode === folder || (l.name && l.name.toUpperCase() === folder));
+                    const meta = info ? `<span class="client-meta" style="color:#00f3ff;">${info.name} | ${info.phone||''}</span>` : `<span class="client-meta" style="color:#444;">No Info</span>`;
+                    h += `<div class="row" onclick="sel('${folder}',this)"><div><span style="font-size:1.1rem; font-weight:bold;">${folder}</span>${meta}</div><span class="del-btn" onclick="delC('${folder}',event)">X</span></div>`;
+                });
+                document.getElementById('clientList').innerHTML = h || "<div style='padding:10px;color:#666'>No Clients</div>";
+            } catch(e) { document.getElementById('clientList').innerHTML = "Error."; }
+        }
+    
+        // --- LEADS ---
+        async function loadLeads() {
+            const r = await fetch('/api/leads');
+            allLeads = await r.json();
+            renderLeads();
+        }
+        function renderLeads() {
+            const term = document.getElementById('leadSearch') ? document.getElementById('leadSearch').value.toLowerCase() : "";
+            const filtered = allLeads.filter(l => (l.name && l.name.toLowerCase().includes(term)) || (l.email && l.email.toLowerCase().includes(term)));
+            let h = "";
+            filtered.forEach(x => {
+                const meta = x.name ? ` | 👤 ${x.name} 📞 ${x.phone||''}` : "";
+                h += `<div class="lead-row">
+                        <div class="lead-info"><strong>${x.name || "Unknown"} ${x.clientCode?'[CLIENT]':''}</strong><small>${x.email} ${x.phone?'• '+x.phone:''}</small></div>
+                        <div class="lead-actions">
+                            <span class="action-btn btn-make" onclick="promoteLead('${x.email}', '${x.name}', '${x.phone}')">➕ CLIENT</span>
+                            ${x.phone ? `<span class="action-btn btn-sms" onclick="sendSms('${x.phone}')">💬 SMS</span>` : ""}
+                            <span class="action-btn btn-edit" onclick="editLead('${x.email}', '${x.name||''}', '${x.phone||''}')">✎</span>
+                            <span class="action-btn btn-email" onclick="sendOnePromo('${x.email}')">✉️</span>
+                            <span class="action-btn del-btn" onclick="deleteLead('${x.email}')">X</span>
+                        </div>
+                      </div>`;
+            });
+            document.getElementById('leadCount').innerText = filtered.length;
+            document.getElementById('leadList').innerHTML = h || "No matches.";
+        }
+    
+        async function promoteLead(email, name, phone) {
+            if(!name || name==='undefined') name = prompt("Confirm Client Name:");
+            if(!name) return;
+            const btn = event.target; btn.innerText = "...";
+            const r = await fetch('/api/promote-lead', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ email, name, phone }) });
+            const d = await r.json();
+            if(d.success) { alert("✅ Client Created: " + d.code); loadLeads(); loadC(); } else alert("Error: " + d.error);
+        }
+    
+        async function generateDeal() {
+            const t = document.getElementById('dealTopic').value;
+            if(!t) return alert("Please enter a topic first.");
+    
+            const btn = event.target;
+            btn.innerText = "Thinking...";
+    
+            try {
+                const r = await fetch('/api/ai', { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ message: t, mode: 'marketing' }) 
+                });
+                
+                const d = await r.json();
+                
+                // DEBUG ALERT: Tell me what the AI said
+                if (d.reply === "AI Offline.") {
+                    alert("❌ Error: API Key is missing in Azure Settings.");
+                } else if (d.reply === "Error" || d.reply === "System Error") {
+                    alert("❌ Error: Azure OpenAI Connection Failed. Check Deployment Name.");
+                } else {
+                    // Try to parse
+                    try {
+                        let clean = d.reply.replace(/```json/g,'').replace(/```/g,'').trim();
+                        const p = JSON.parse(clean);
+                        document.getElementById('promoSubject').value = p.subject;
+                        document.getElementById('promoBody').value = p.body;
+                    } catch(parseError) {
+                        // Fallback: It wasn't JSON, just show the text
+                        document.getElementById('promoBody').value = d.reply;
+                        alert("⚠️ AI returned text, not a format I understood. See Body box.");
+                    }
+                }
+            } catch(e) {
+                alert("❌ Network Error: Server might be down.");
+            }
+            btn.innerText = "GENERATE";
+        }
+    
+        // --- UTILS ---
+        async function editLead(oldEmail, oldName, oldPhone) { const newName=prompt("Name:",oldName); const newEmail=prompt("Email:",oldEmail); const newPhone=prompt("Phone:",oldPhone); if(newEmail) { await fetch('/api/delete-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:oldEmail})}); await fetch('/api/add-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:newName,email:newEmail,phone:newPhone})}); loadLeads(); } }
+        async function sendSms(phone) { const msg=prompt("SMS:"); if(!msg)return; const r=await fetch('/api/send-sms',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({phone,message:msg})}); if((await r.json()).success) alert("Sent!"); else alert("Failed"); }
+        async function addManualLead() { const n=document.getElementById('mName').value; const e=document.getElementById('mEmail').value; const p=document.getElementById('mPhone').value; if(!e)return; await fetch('/api/add-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:n,email:e,phone:p})}); document.getElementById('mName').value=""; document.getElementById('mEmail').value=""; document.getElementById('mPhone').value=""; loadLeads(); }
+        async function deleteLead(e) { if(confirm("Delete?")) await fetch('/api/delete-lead',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e})}); loadLeads(); }
+        async function sendPromoAll() { if(confirm("Send ALL?")) await fetch('/api/send-promo-all',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({subject:document.getElementById('promoSubject').value,body:document.getElementById('promoBody').value})}); alert("Sent!"); }
+        async function sendOnePromo(e) { if(confirm("Send?")) await fetch('/api/send-promo',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,subject:document.getElementById('promoSubject').value,body:document.getElementById('promoBody').value})}); alert("Sent!"); }
+        async function uploadCsv(f) { const d=new FormData(); d.append('file',f); await fetch('/api/upload-leads-csv',{method:'POST',body:d}); loadLeads(); }
+        async function refreshDatabase() { try { const r=await fetch('/api/leads'); const d=await r.json(); document.getElementById('dbContent').value=JSON.stringify(d,null,4); } catch(e){} }
+        
+        // (Other standard utils: mkC, delC, sel, lF, up, delF, lCh, snd, copyLink, emailClient, setStatus, getStatus, loadGalleryManager, initDrag, saveOrder, upGallery, delGallery, uploadAudio, saveLiveConfig, generateLoop, enableEdit, saveSite)
+        async function mkC() { const n=document.getElementById('newC').value.toUpperCase().replace(/ /g,"_"); if(!n)return; await fetch(`${BASE}/${CLIENT_CON}/${n}/init.txt${KEY}`,{method:'PUT',headers:{'x-ms-blob-type':'BlockBlob'},body:"Init"}); loadC(); }
+        async function delC(n,e) { e.stopPropagation(); if(confirm("Delete "+n+"?")) { const r=await fetch(`${BASE}/${CLIENT_CON}${KEY}&restype=container&comp=list&prefix=${n}/`); const t=await r.text(); const b=new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob"); for(let i of b) await fetch(`${BASE}/${CLIENT_CON}/${i.getElementsByTagName("Name")[0].textContent}${KEY}`,{method:'DELETE'}); setTimeout(loadC,1000); } }
+        function sel(n,el) { curr=n; document.querySelectorAll('.row').forEach(x=>x.classList.remove('active')); el.classList.add('active'); document.getElementById('codeDisp').innerText=n; lCh(); lF(); getStatus(); }
+        async function lF() { if(!curr)return; const r=await fetch(`${BASE}/${CLIENT_CON}${KEY}&restype=container&comp=list&prefix=${curr}/`); const t=await r.text(); const b=new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob"); let h=""; for(let i of b){ const n=i.getElementsByTagName("Name")[0].textContent.replace(curr+'/',''); if(!n.startsWith('msg_')&&!n.startsWith('init')&&!n.startsWith('status')) { const link=`${BASE}/${CLIENT_CON}/${curr}/${encodeURIComponent(n)}${KEY}`; h+=`<div class="file-row"><span>${n}</span><div style="display:flex;align-items:center;"><a href="${link}" target="_blank" class="d-btn">DL</a><span class="del-btn" onclick="delF('${curr}/${n}')">X</span></div></div>`; } } document.getElementById('fList').innerHTML=h; }
+        async function delF(path) { if(confirm("Delete?")) { await fetch(`${BASE}/${CLIENT_CON}/${path}${KEY}`, { method: 'DELETE' }); setTimeout(lF, 500); } }
+        async function up(fs) { for(let f of fs) await fetch(`${BASE}/${CLIENT_CON}/${curr}/${f.name}${KEY}`,{method:'PUT',headers:{'x-ms-blob-type':'BlockBlob'},body:f}); lF(); }
+        async function lCh() { if(!curr)return; const r=await fetch(`${BASE}/${CLIENT_CON}${KEY}&restype=container&comp=list&prefix=${curr}/msg_`); const t=await r.text(); const b=new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob"); let h=""; for(let i of b){ const n=i.getElementsByTagName("Name")[0].textContent; const tx=await(await fetch(`${BASE}/${CLIENT_CON}/${n}${KEY}`)).text(); const cls=n.includes('ADMIN')?'admin':'client'; h+=`<div class="msg ${cls}">${tx}</div>`; } document.getElementById('chatFeed').innerHTML=h; }
+        async function snd() { const i=document.getElementById('mIn'); if(!i.value||!curr)return; await fetch(`${BASE}/${CLIENT_CON}/${curr}/msg_${Date.now()}_ADMIN.txt${KEY}`,{method:'PUT',headers:{'x-ms-blob-type':'BlockBlob'},body:i.value}); await fetch('/api/admin-reply', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({client:curr, msg:i.value})}); i.value=""; setTimeout(lCh,500); }
+        function copyLink() { navigator.clipboard.writeText(`https://platinumpro-13791.azurewebsites.net/client.html?p=${curr}`); alert("Copied!"); }
+        function emailClient() { const e=prompt("Email:"); const m=prompt("Msg:"); if(e&&m) fetch('/api/email-client',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email:e,client:curr,message:m})}); }
+        async function setStatus(v) { if(curr) await fetch('/api/status', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ client: curr, status: v }) }); getStatus(); }
+        async function getStatus() { if(!curr) return; document.querySelectorAll('.stat-btn').forEach(b => b.classList.remove('active')); try{ const r=await fetch(`${BASE}/${CLIENT_CON}/${curr}/status.txt${KEY}&t=${Date.now()}`); if(r.ok) document.getElementById('btn-'+(await r.text())).classList.add('active'); }catch(e){} }
+        async function loadGalleryManager() { try { let order = []; try { const ro = await fetch(`${BASE}/${GAL_CON}/${ORDER_FILE}${KEY}&t=${Date.now()}`); if(ro.ok) order = await ro.json(); } catch(e){} const r = await fetch(`${BASE}/${GAL_CON}${KEY}&restype=container&comp=list`); const t = await r.text(); const blobs = new DOMParser().parseFromString(t,"text/xml").getElementsByTagName("Blob"); let list = [], blobNames = Array.from(blobs).map(b => b.getElementsByTagName("Name")[0].textContent); order.forEach(n => { if(blobNames.includes(n)) list.push(n); }); blobNames.forEach(n => { if(!list.includes(n) && n !== ORDER_FILE) list.push(n); }); let h=""; list.forEach(n => { const link = `${BASE}/${GAL_CON}/${encodeURIComponent(n)}${KEY}`; let thumb = n.toLowerCase().endsWith('mp4') ? "🎥" : `<img src="${link}" class="thumb">`; h += `<div class="draggable" draggable="true" data-name="${n}"><div>${thumb}</div><span class="del-btn" onclick="delGallery('${n}')">X</span></div>`; }); document.getElementById('galleryList').innerHTML = h; initDrag(); } catch(e) { document.getElementById('galleryList').innerHTML = "Gallery Error."; } }
+        function initDrag() { const list = document.getElementById('galleryList'); list.querySelectorAll('.draggable').forEach(i => { i.addEventListener('dragstart', () => i.classList.add('dragging')); i.addEventListener('dragend', () => { i.classList.remove('dragging'); saveOrder(); }); }); list.addEventListener('dragover', e => { e.preventDefault(); const after = [...list.querySelectorAll('.draggable:not(.dragging)')].reduce((c, r) => { const box = r.getBoundingClientRect(); const off = e.clientX - box.left - box.width / 2; return off < 0 && off > c.off ? { off: off, el: r } : c; }, { off: Number.NEGATIVE_INFINITY }).el; const d = document.querySelector('.dragging'); if (after == null) list.appendChild(d); else list.insertBefore(d, after); }); }
+        async function saveOrder() { const items = [...document.querySelectorAll('.draggable')].map(x => x.getAttribute('data-name')); await fetch(`${BASE}/${GAL_CON}/${ORDER_FILE}${KEY}`, { method: 'PUT', headers: {'x-ms-blob-type':'BlockBlob', 'Content-Type':'application/json'}, body: JSON.stringify(items) }); }
+        async function upGallery(fs) { for(let f of fs) await fetch(`${BASE}/${GAL_CON}/${encodeURIComponent(f.name)}${KEY}`, {method:'PUT', headers:{'x-ms-blob-type':'BlockBlob'}, body:f}); loadGalleryManager(); }
+        async function delGallery(n) { if(confirm("Delete?")) { await fetch(`${BASE}/${GAL_CON}/${n}${KEY}`, {method:'DELETE'}); loadGalleryManager(); } }
+        async function uploadAudio(f,n){ await fetch(`${BASE}/${WEB_CON}/${n}${KEY}`,{method:'PUT',headers:{'x-ms-blob-type':'BlockBlob','Content-Type':f.type},body:f}); document.getElementById('audioStatus').innerText="Done!"; }
+        async function saveLiveConfig(){ await fetch('/api/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({liveUrl:document.getElementById('liveUrl').value})}); alert("Updated!"); }
+        async function generateLoop() { const t = document.getElementById('loopTopic').value; const r = await fetch('/api/ai', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ message: t, mode: 'producer' }) }); const d = await r.json(); try { const f = JSON.parse(d.reply); let h=""; f.forEach(file => { h+=`<div style="padding:10px; background:#222; margin-bottom:5px;">${file} <a href="/api/stream?file=${encodeURIComponent(file)}" target="_blank" style="color:#0f0">PLAY</a></div>`; }); document.getElementById('loopResult').innerHTML=h; } catch(e){ document.getElementById('loopResult').innerHTML="No matches."; } }
+        function enableEdit() { document.getElementById('builderFrame').contentDocument.body.contentEditable = true; alert("Edit Mode ON"); }
+        async function saveSite() { if(confirm("Publish?")) { const h = "<!DOCTYPE html>
+" + document.getElementById('builderFrame').contentDocument.documentElement.outerHTML; await fetch('/admin/save', { method: 'POST', headers: { 'x-pin': PIN, 'Content-Type': 'text/html' }, body: h }); alert("Published!"); } }
+    
+        setInterval(() => { if(curr) { lCh(); getStatus(); } }, 5000);
+    </script>
+    </body>
+    
+    </html>
